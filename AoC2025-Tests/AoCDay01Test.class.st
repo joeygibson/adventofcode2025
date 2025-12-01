@@ -55,7 +55,7 @@ AoCDay01Test >> testPart2WithRealData [
 
 	res := inst part2: lines.
 
-	self assert: res equals: 0.
+	self assert: res equals: 5831.
 		
 ]
 
@@ -70,6 +70,6 @@ AoCDay01Test >> testPart2WithSample [
 
 	res := inst part2: lines.
 
-	self assert: res equals: 0.
+	self assert: res equals: 6.
 		
 ]

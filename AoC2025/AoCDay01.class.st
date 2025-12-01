@@ -71,6 +71,50 @@ AoCDay01 >> part1: lines [
 	^ self zeroCount
 ]
 
+{ #category : 'as yet unclassified' }
+AoCDay01 >> part2: lines [
+
+	| instructions zeros current |
+	current := 50.
+	zeros := 0.
+
+	instructions := self parseLines: lines.
+
+	instructions do: [ :line |
+			| dir clicks roundTrips remainingClicks tmp |
+			dir := line first.
+			clicks := line second.
+
+			roundTrips := clicks // 100.
+			remainingClicks := clicks \\ 100.
+
+			zeros := zeros + roundTrips.
+
+			dir = $L ifTrue: [ remainingClicks := remainingClicks negated ].
+
+			tmp := current + remainingClicks.
+			
+			tmp < 0
+				ifTrue: [
+						tmp := tmp + 100.
+						current ~= 0 ifTrue: [ zeros := zeros + 1 ] ]
+				ifFalse: [
+						tmp > 99
+							ifTrue: [
+									tmp := tmp - 100.
+									current ~= 0 ifTrue: [ zeros := zeros + 1 ] ]
+							ifFalse: [ tmp = 0 ifTrue: [ zeros := zeros + 1 ] ] ].
+
+
+
+			current := tmp ].
+
+
+
+
+	^ zeros
+]
+
 { #category : 'accessing' }
 AoCDay01 >> zeroCount [
 
