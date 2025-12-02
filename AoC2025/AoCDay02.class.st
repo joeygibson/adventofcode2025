@@ -8,6 +8,23 @@ Class {
 	#package : 'AoC2025'
 }
 
+{ #category : 'testing' }
+AoCDay02 >> isInvalid: id [
+
+	| str |
+	str := id asString.
+
+	1 to: str size // 2 do: [ :i |
+			| chunks sub |
+			sub := str copyFrom: 1 to: i.
+			chunks := str splitOn: sub.
+
+			(chunks allSatisfy: [ :chunk | chunk isEmptyOrNil ]) ifTrue: [
+				^ true ] ].
+
+	^ false
+]
+
 { #category : 'running' }
 AoCDay02 >> part1: lines [
 
@@ -26,12 +43,33 @@ AoCDay02 >> part1: lines [
 	^ invalidIds asSet sum
 ]
 
+{ #category : 'running' }
+AoCDay02 >> part2: lines [
+
+	| invalidIds ranges |
+	ranges := (lines first splitOn: ',') collect: [ :str |
+			          | numbers start end |
+			          numbers := (str copyReplaceAll: '-' with: ' ')
+				                     extractAllNumbers.
+			          start := numbers first.
+			          end := numbers second.
+
+			          start to: end ].
+
+	invalidIds := ranges flatCollect: [ :range |
+		              self validateIds2: range ].
+
+	^ invalidIds asSet sum
+]
+
+{ #category : 'as yet unclassified' }
+AoCDay02 >> validateIds2: ids [
+
+	^ ids select: [ :id | self isInvalid: id ]
+]
+
 { #category : 'as yet unclassified' }
 AoCDay02 >> validateIds: ids [
-	"| mods |
-	mods := { 11. 101. 10101. 1010101 }.
-
-	^ ids select: [ :id | mods anySatisfy: [ :mod | id \\ mod = 0 ] ]"
 
 	^ ids select: [ :id |
 			  | str |
