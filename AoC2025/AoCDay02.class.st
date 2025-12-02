@@ -11,19 +11,36 @@ Class {
 { #category : 'running' }
 AoCDay02 >> part1: lines [
 
-	| ids invalidIds |
-	ids := (lines first copyReplaceAll: '-' with: ' ') extractAllNumbers.
+	| invalidIds ranges |
+	ranges := (lines first splitOn: ',') collect: [ :str |
+			          | numbers start end |
+			          numbers := (str copyReplaceAll: '-' with: ' ')
+				                     extractAllNumbers.
+			          start := numbers first.
+			          end := numbers second.
 
-	invalidIds := self validateIds: ids.
+			          start to: end ].
+
+	invalidIds := ranges flatCollect: [ :range | self validateIds: range ].
 	
-	^invalidIds sum.
+	^ invalidIds asSet sum
 ]
 
 { #category : 'as yet unclassified' }
 AoCDay02 >> validateIds: ids [
+	"| mods |
+	mods := { 11. 101. 10101. 1010101 }.
 
-	| mods |
-	mods := { 11. 101. 10101. 1010101. 101010101 }.
+	^ ids select: [ :id | mods anySatisfy: [ :mod | id \\ mod = 0 ] ]"
 
-	^ ids select: [ :id | mods anySatisfy: [ :mod | id \\ mod = 0 ] ]
+	^ ids select: [ :id |
+			  | str |
+			  str := id asString.
+
+			  str size odd
+				  ifTrue: [ false ]
+				  ifFalse: [
+						  | pivot |
+						  pivot := str size // 2.
+						  (str first: pivot) = (str allButFirst: pivot) ] ]
 ]

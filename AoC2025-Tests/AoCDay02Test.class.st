@@ -25,7 +25,7 @@ AoCDay02Test >> testPart1WithRealData [
 
 	res := inst part1: lines.
 
-	self assert: res equals: 0.
+	self assert: res equals: 19219508902.
 		
 ]
 
