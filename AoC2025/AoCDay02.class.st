@@ -8,6 +8,18 @@ Class {
 	#package : 'AoC2025'
 }
 
+{ #category : 'as yet unclassified' }
+AoCDay02 >> generateRanges: lines [
+
+	^ (lines first splitOn: ',') collect: [ :str |
+			  | numbers start end |
+			  numbers := (str copyReplaceAll: '-' with: ' ') extractAllNumbers.
+			  start := numbers first.
+			  end := numbers second.
+
+			  start to: end ]
+]
+
 { #category : 'testing' }
 AoCDay02 >> isInvalid: id [
 
@@ -29,17 +41,10 @@ AoCDay02 >> isInvalid: id [
 AoCDay02 >> part1: lines [
 
 	| invalidIds ranges |
-	ranges := (lines first splitOn: ',') collect: [ :str |
-			          | numbers start end |
-			          numbers := (str copyReplaceAll: '-' with: ' ')
-				                     extractAllNumbers.
-			          start := numbers first.
-			          end := numbers second.
-
-			          start to: end ].
+	ranges := self generateRanges: lines.
 
 	invalidIds := ranges flatCollect: [ :range | self validateIds: range ].
-	
+
 	^ invalidIds asSet sum
 ]
 
@@ -47,14 +52,7 @@ AoCDay02 >> part1: lines [
 AoCDay02 >> part2: lines [
 
 	| invalidIds ranges |
-	ranges := (lines first splitOn: ',') collect: [ :str |
-			          | numbers start end |
-			          numbers := (str copyReplaceAll: '-' with: ' ')
-				                     extractAllNumbers.
-			          start := numbers first.
-			          end := numbers second.
-
-			          start to: end ].
+	ranges := self generateRanges: lines.
 
 	invalidIds := ranges flatCollect: [ :range |
 		              self validateIds2: range ].
