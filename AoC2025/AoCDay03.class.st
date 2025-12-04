@@ -9,6 +9,28 @@ Class {
 }
 
 { #category : 'as yet unclassified' }
+AoCDay03 >> find: num batteriesInBanks: banks [
+
+	^ banks collect: [ :bank |
+			  | numbers pos res |
+			  numbers := OrderedCollection new.
+			  pos := 0.
+			  1 to: num do: [ :i |
+					  | val |
+					  res := self
+						         largestIn: bank
+						         between: pos + 1
+						         and: bank size - (num - i).
+
+					  val := res first.
+					  pos := res second.
+					  numbers add: val ].
+
+			  res := '' join: numbers.
+			  res asInteger ]
+]
+
+{ #category : 'as yet unclassified' }
 AoCDay03 >> largestIn: seq between: start and: end [
 
 	| largest largestPos |
@@ -27,18 +49,7 @@ AoCDay03 >> part1: lines [
 	banks := lines collect: [ :line |
 		         line asArray collect: [ :ch | ch asString asInteger ] ].
 
-
-	tops := banks collect: [ :bank |
-			        | res largest largestPos secondLargest |
-			        res := self largestIn: bank between: 1 and: bank size - 1.
-			        largest := res first.
-			        largestPos := res second.
-			        secondLargest := (bank
-				                          copyFrom: largestPos + 1
-				                          to: bank size) max.
-
-			        res := largest asString , secondLargest asString.
-			        res asInteger ].
+	tops := self find: 2 batteriesInBanks: banks.
 
 	^ tops sum
 ]
@@ -50,24 +61,7 @@ AoCDay03 >> part2: lines [
 	banks := lines collect: [ :line |
 		         line asArray collect: [ :ch | ch asString asInteger ] ].
 
-
-	tops := banks collect: [ :bank |
-			        | numbers pos res |
-			        numbers := OrderedCollection new.
-			        pos := 0.
-			        1 to: 12 do: [ :i |
-					        | val |
-					        res := self
-						               largestIn: bank
-						               between: pos + 1
-						               and: bank size - (12 - i).
-
-					        val := res first.
-					        pos := res second.
-					        numbers add: val ].
-
-			        res := '' join: numbers.
-			        res asInteger ].
+	tops := self find: 12 batteriesInBanks: banks.
 
 	^ tops sum
 ]
