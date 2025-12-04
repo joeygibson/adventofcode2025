@@ -14,19 +14,6 @@ Class {
 }
 
 { #category : 'as yet unclassified' }
-AoCDay04 >> findPaperRolls [
-
-	| keys |
-	keys := OrderedCollection new.
-
-	1 to: grid width do: [ :x |
-			1 to: grid height do: [ :y |
-			(grid at: x @ y) = '@' ifTrue: [ keys add: x @ y ] ] ].
-
-	^ keys
-]
-
-{ #category : 'as yet unclassified' }
 AoCDay04 >> findRemovableRolls: rolls [
 
 	^ rolls select: [ :roll |
@@ -46,7 +33,7 @@ AoCDay04 >> part1: lines [
 	width := grid width.
 	height := grid height.
 
-	rolls := self findPaperRolls.
+	rolls := grid selectKeysForValuesMatching: [ :cell | cell = '@' ].
 
 	removableRolls := self findRemovableRolls: rolls.
 
@@ -62,7 +49,7 @@ AoCDay04 >> part2: lines [
 	height := grid height.
 	removedCount := 0.
 
-	rolls := self findPaperRolls.
+	rolls := grid selectKeysForValuesMatching: [ :cell | cell = '@' ].
 
 	removableRolls := self findRemovableRolls: rolls.
 
@@ -71,7 +58,7 @@ AoCDay04 >> part2: lines [
 
 			self removeRolls: removableRolls.
 
-			rolls := self findPaperRolls.
+			rolls := grid selectKeysForValuesMatching: [ :cell | cell = '@' ].
 			removableRolls := self findRemovableRolls: rolls ].
 
 	^ removedCount
