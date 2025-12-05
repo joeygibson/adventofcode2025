@@ -8,43 +8,10 @@ Class {
 	#package : 'AoC2025'
 }
 
-{ #category : 'running' }
-AoCDay05 >> part1: lines [
+{ #category : 'as yet unclassified' }
+AoCDay05 >> combineRanges: ranges [
 
-	| freshIngredientRanges available blankLinePos freshVeggies |
-	blankLinePos := lines asOrderedCollection position: [ :line |
-		                line trimmed isEmpty ].
-
-	freshIngredientRanges := (lines first: blankLinePos - 1) collect: [
-			                         :line |
-			                         | numbers |
-			                         numbers := line splitOn: '-'.
-			                         numbers first asInteger to:
-			                         numbers second asInteger ].
-
-	available := (lines allButFirst: blankLinePos) collect: [ :line |
-		             line asInteger ].
-
-	freshVeggies := available select: [ :id |
-		                freshIngredientRanges anySatisfy: [ :range |
-			                range includes: id ] ].
-	^ freshVeggies size
-]
-
-{ #category : 'running' }
-AoCDay05 >> part2: lines [
-	"Adapted from this Python code https://www.reddit.com/r/adventofcode/comments/1pemdwd/2025_day_5_solutions/nsgkgci/"
-	| ranges blankLinePos combinedRanges newCombinedRanges |
-	blankLinePos := lines asOrderedCollection position: [ :line |
-		                line trimmed isEmpty ].
-
-	ranges := (lines first: blankLinePos - 1) collect: [ :line |
-			          | numbers |
-			          numbers := line splitOn: '-'.
-			          OrderedCollection
-				          with: numbers first asInteger
-				          with: numbers second asInteger ].
-
+	| combinedRanges newCombinedRanges |
 	combinedRanges := OrderedCollection new.
 
 	ranges do: [ :newRange |
@@ -62,6 +29,52 @@ AoCDay05 >> part2: lines [
 
 			newCombinedRanges add: newRangeCopy.
 			combinedRanges := newCombinedRanges copy ].
+
+	^ combinedRanges
+]
+
+{ #category : 'running' }
+AoCDay05 >> part1: lines [
+
+	| freshIngredientRanges available blankLinePos freshVeggies combinedRanges |
+	blankLinePos := lines asOrderedCollection position: [ :line |
+		                line trimmed isEmpty ].
+
+	freshIngredientRanges := (lines first: blankLinePos - 1) collect: [
+			                         :line |
+			                         | numbers |
+			                         numbers := line splitOn: '-'.
+			                         OrderedCollection
+				                         with: numbers first asInteger
+				                         with: numbers second asInteger ].
+
+	combinedRanges := self combineRanges: freshIngredientRanges.
+
+	available := (lines allButFirst: blankLinePos) collect: [ :line |
+		             line asInteger ].
+
+	freshVeggies := available select: [ :id |
+			                combinedRanges anySatisfy: [ :range |
+				                id >= range first and: id <= range last ] ].
+	^ freshVeggies size
+]
+
+{ #category : 'running' }
+AoCDay05 >> part2: lines [
+	"Adapted from this Python code https://www.reddit.com/r/adventofcode/comments/1pemdwd/2025_day_5_solutions/nsgkgci/"
+
+	| ranges blankLinePos combinedRanges |
+	blankLinePos := lines asOrderedCollection position: [ :line |
+		                line trimmed isEmpty ].
+
+	ranges := (lines first: blankLinePos - 1) collect: [ :line |
+			          | numbers |
+			          numbers := line splitOn: '-'.
+			          OrderedCollection
+				          with: numbers first asInteger
+				          with: numbers second asInteger ].
+
+	combinedRanges := self combineRanges: ranges.
 
 	^ combinedRanges
 		  inject: 0
