@@ -10,6 +10,7 @@ Class {
 
 { #category : 'as yet unclassified' }
 AoCDay05 >> combineRanges: ranges [
+	"Adapted from this Python code https://www.reddit.com/r/adventofcode/comments/1pemdwd/2025_day_5_solutions/nsgkgci/"
 
 	| combinedRanges newCombinedRanges |
 	combinedRanges := OrderedCollection new.
@@ -61,7 +62,6 @@ AoCDay05 >> part1: lines [
 
 { #category : 'running' }
 AoCDay05 >> part2: lines [
-	"Adapted from this Python code https://www.reddit.com/r/adventofcode/comments/1pemdwd/2025_day_5_solutions/nsgkgci/"
 
 	| ranges blankLinePos combinedRanges |
 	blankLinePos := lines asOrderedCollection position: [ :line |
