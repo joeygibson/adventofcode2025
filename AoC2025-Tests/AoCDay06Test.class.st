@@ -52,15 +52,15 @@ AoCDay06Test >> testPart2WithRealData [
 		         onPath: self path.
 
 	res := inst part2: lines.
-
-	self assert: res equals: 0.
+	
+	self assert: res equals: 10227753257799.
 		
 ]
 
 { #category : 'executing' }
 AoCDay06Test >> testPart2WithSample [
-|lines res|
 
+	| lines res |
 	lines := self
 		         readInputFileAsLines: 'input0.txt'
 		         for: self day
@@ -68,6 +68,5 @@ AoCDay06Test >> testPart2WithSample [
 
 	res := inst part2: lines.
 
-	self assert: res equals: 0.
-		
+	self assert: res equals: 3263827
 ]
