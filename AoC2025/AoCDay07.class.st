@@ -4,20 +4,9 @@ Day07 of Advent of Code 2025.
 Class {
 	#name : 'AoCDay07',
 	#superclass : 'AoCBase',
-	#instVars : [
-		'cache'
-	],
 	#category : 'AoC2025',
 	#package : 'AoC2025'
 }
-
-{ #category : 'as yet unclassified' }
-AoCDay07 >> memoize: aBlock [
-
-	cache := Dictionary new.
-
-	^ [ :arg | cache at: arg ifAbsentPut: [ aBlock value: arg ] ]
-]
 
 { #category : 'running' }
 AoCDay07 >> part1: lines [
