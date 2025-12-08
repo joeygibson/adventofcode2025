@@ -16,17 +16,16 @@ AoCDay08Test >> setUp [
 
 { #category : 'executing' }
 AoCDay08Test >> testPart1WithRealData [
-|lines res|
 
+	| lines res |
 	lines := self
 		         readInputFileAsLines: 'input1.txt'
 		         for: self day
 		         onPath: self path.
 
-	res := inst part1: lines.
+	res := inst part1: lines iterations: 1000.
 
-	self assert: res equals: 0.
-		
+	self assert: res equals: 75582
 ]
 
 { #category : 'executing' }

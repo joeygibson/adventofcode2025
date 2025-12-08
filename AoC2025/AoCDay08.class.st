@@ -14,7 +14,8 @@ AoCDay08 >> part1: lines iterations: iterations [
 	| boxes combos distances circuits sortedCircuits |
 	boxes := lines collect: [ :line |
 		         (line splitOn: ',') collect: [ :num | num asInteger ] ].
-	circuits := Set withAll: boxes.
+	circuits := Set withAll:
+		            (boxes collect: [ :point | Set with: point ]).
 
 	combos := OrderedCollection new.
 	1 to: boxes size do: [ :i |
@@ -36,7 +37,7 @@ AoCDay08 >> part1: lines iterations: iterations [
 				              b.
 				              distance } ]) sorted: [ :a :b | a third <= b third ].
 
-	(distances first: 10) do: [ :dist |
+	(distances first: iterations) do: [ :dist |
 			| a b existingCircuits |
 			a := dist first.
 			b := dist second.
@@ -44,8 +45,6 @@ AoCDay08 >> part1: lines iterations: iterations [
 			existingCircuits := circuits select: [ :circuit |
 				                    (circuit includes: a) or:
 					                    (circuit includes: b) ].
-
-			self halt.
 
 			existingCircuits size = 1
 				ifTrue: [
@@ -60,9 +59,8 @@ AoCDay08 >> part1: lines iterations: iterations [
 						circuits removeAll: existingCircuits.
 						circuits add: combinedCircuit ] ].
 
-	self halt.
 	sortedCircuits := circuits sorted: [ :a :b | a size >= b size ].
-	^ sortedCircuits
+	^ (sortedCircuits first: 3)
 		  inject: 1
 		  into: [ :acc :circuit | acc * circuit size ]
 ]
