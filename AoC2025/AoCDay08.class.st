@@ -38,26 +38,7 @@ AoCDay08 >> part1: lines iterations: iterations [
 				              distance } ]) sorted: [ :a :b | a third <= b third ].
 
 	(distances first: iterations) do: [ :dist |
-			| a b existingCircuits |
-			a := dist first.
-			b := dist second.
-
-			existingCircuits := circuits select: [ :circuit |
-				                    (circuit includes: a) or:
-					                    (circuit includes: b) ].
-
-			existingCircuits size = 1
-				ifTrue: [
-						existingCircuits
-							add: a;
-							add: b ]
-				ifFalse: [
-						| combinedCircuit |
-						combinedCircuit := existingCircuits
-							                   inject: Set new
-							                   into: [ :acc :each | acc union: each ].
-						circuits removeAll: existingCircuits.
-						circuits add: combinedCircuit ] ].
+		self processPair: dist withCircuits: circuits ].
 
 	sortedCircuits := circuits sorted: [ :a :b | a size >= b size ].
 	^ (sortedCircuits first: 3)
@@ -75,6 +56,9 @@ AoCDay08 >> part2: lines [
 		            (boxes collect: [ :point | Set with: point ]).
 
 	combos := OrderedCollection new.
+	penultimate := nil.
+	ultimate := nil.
+
 	1 to: boxes size do: [ :i |
 			i + 1 to: boxes size do: [ :j |
 					combos add: {
@@ -95,29 +79,34 @@ AoCDay08 >> part2: lines [
 				              distance } ]) sorted: [ :a :b | a third <= b third ].
 	distances do: [ :dist |
 			circuits size = 1 ifFalse: [
-					| a b existingCircuits |
-					a := dist first.
-					b := dist second.
+					penultimate := dist first.
+					ultimate := dist second.
 
-					existingCircuits := circuits select: [ :circuit |
-						                    (circuit includes: a) or:
-							                    (circuit includes: b) ].
-
-					penultimate := a.
-					ultimate := b.
-
-					existingCircuits size = 1
-						ifTrue: [
-								existingCircuits
-									add: a;
-									add: b ]
-						ifFalse: [
-								| combinedCircuit |
-								combinedCircuit := existingCircuits
-									                   inject: Set new
-									                   into: [ :acc :each | acc union: each ].
-								circuits removeAll: existingCircuits.
-								circuits add: combinedCircuit ] ] ].
+					self processPair: dist withCircuits: circuits ] ].
 
 	^ penultimate first * ultimate first
+]
+
+{ #category : 'as yet unclassified' }
+AoCDay08 >> processPair: pair withCircuits: circuits [
+
+	| a b existingCircuits |
+	a := pair first.
+	b := pair second.
+
+	existingCircuits := circuits select: [ :circuit |
+		                    (circuit includes: a) or: (circuit includes: b) ].
+
+	existingCircuits size = 1
+		ifTrue: [
+				existingCircuits
+					add: a;
+					add: b ]
+		ifFalse: [
+				| combinedCircuit |
+				combinedCircuit := existingCircuits
+					                   inject: Set new
+					                   into: [ :acc :each | acc union: each ].
+				circuits removeAll: existingCircuits.
+				circuits add: combinedCircuit ]
 ]
