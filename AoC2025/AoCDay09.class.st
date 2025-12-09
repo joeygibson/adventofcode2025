@@ -39,6 +39,11 @@ AoCDay09 >> part2: lines [
 
 	bounds := PathShape vertices: points.
 
+	Transcript
+		show: 'bounds';
+		show: bounds bounds;
+		cr.
+
 	rectangles := points uniquePairs collect: [ :pair |
 		              Rectangle point: pair first point: pair second ].
 
