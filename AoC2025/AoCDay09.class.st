@@ -8,16 +8,6 @@ Class {
 	#package : 'AoC2025'
 }
 
-{ #category : 'as yet unclassified' }
-AoCDay09 >> allPairsOf: aCollection [
-    | pairs |
-    pairs := OrderedCollection new.
-    1 to: aCollection size do: [:i |
-        (i + 1) to: aCollection size do: [:j |
-            pairs add: { (aCollection at: i). (aCollection at: j) } ] ].
-    ^ pairs
-]
-
 { #category : 'running' }
 AoCDay09 >> part1: lines [
 
@@ -28,12 +18,10 @@ AoCDay09 >> part1: lines [
 				                    c asString asInteger ].
 			          chunks first @ chunks second ].
 
-	rectangles := (points cartesianProductOfLength: 2) collect: [ :pair |
-		              Rectangle
-			              point: pair first
-			              point: pair second + (1 @ 1) ].
+	rectangles := points uniquePairs collect: [ :pair |
+		              Rectangle point: pair first point: pair second ].
 
-	areas := (rectangles collect: [ :r | r area ]) sorted: [ :a :b |
+	areas := (rectangles collect: [ :r | r inclusiveArea ]) sorted: [ :a :b |
 		         a >= b ].
 
 	^ areas first
@@ -51,15 +39,15 @@ AoCDay09 >> part2: lines [
 
 	bounds := PathShape vertices: points.
 
-	rectangles := (points cartesianProductOfLength: 2) collect: [ :pair |
+	rectangles := points uniquePairs collect: [ :pair |
 		              Rectangle point: pair first point: pair second ].
 
 	containedRectangles := rectangles select: [ :r |
 		                       r corners allSatisfy: [ :c |
 			                       bounds containsPoint: c ] ].
 
-	areas := (containedRectangles collect: [ :r | r area ]) sorted: [ :a :b |
-		         a >= b ].
+	areas := (containedRectangles collect: [ :r | r inclusiveArea ])
+		         sorted: [ :a :b | a >= b ].
 
 	^ areas first
 ]
