@@ -17,13 +17,20 @@ AoCDay08Test >> setUp [
 { #category : 'executing' }
 AoCDay08Test >> testPart1WithRealData [
 
-	| lines res |
+	| lines res duration|
 	lines := self
 		         readInputFileAsLines: 'input1.txt'
 		         for: self day
 		         onPath: self path.
 
-	res := inst part1: lines iterations: 1000.
+	duration := [ res := inst part1: lines iterations: 1000. ] timeToRun.
+
+	Transcript
+		show: 'testPart1WithRealData: ';
+		show: duration asMilliSeconds printString;
+		show: ' ms';
+		cr.	
+	
 
 	self assert: res equals: 75582
 ]
@@ -31,42 +38,59 @@ AoCDay08Test >> testPart1WithRealData [
 { #category : 'executing' }
 AoCDay08Test >> testPart1WithSample [
 
-	| lines res |
+	| lines res duration|
 	lines := self
 		         readInputFileAsLines: 'input0.txt'
 		         for: self day
 		         onPath: self path.
 
-	res := inst part1: lines iterations: 10.
+	duration := [ res := inst part1: lines iterations: 10. ] timeToRun.
+
+	Transcript
+		show: 'testPart1WithSample: ';
+		show: duration asMilliSeconds printString;
+		show: ' ms';
+		cr.	
 
 	self assert: res equals: 40
 ]
 
 { #category : 'executing' }
 AoCDay08Test >> testPart2WithRealData [
-|lines res|
 
+	| lines res duration |
 	lines := self
 		         readInputFileAsLines: 'input1.txt'
 		         for: self day
 		         onPath: self path.
 
-	res := inst part2: lines.
+	duration := [ res := inst part2: lines ] timeToRun.
 
-	self assert: res equals: 59039696.
-		
+	Transcript
+		show: 'testPart2WithRealData: ';
+		show: duration asMilliSeconds printString;
+		show: ' ms';
+		cr.
+
+	self assert: res equals: 59039696
 ]
 
 { #category : 'executing' }
 AoCDay08Test >> testPart2WithSample [
 
-	| lines res |
+	| lines res duration|
 	lines := self
 		         readInputFileAsLines: 'input0.txt'
 		         for: self day
 		         onPath: self path.
 
-	res := inst part2: lines.
+	duration := [ res := inst part2: lines. ] timeToRun.
+
+	Transcript
+		show: 'testPart2WithSample: ';
+		show: duration asMilliSeconds printString;
+		show: ' ms';
+		cr.		
 
 	self assert: res equals: 25272
 ]
