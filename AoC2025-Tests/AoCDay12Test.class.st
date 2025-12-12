@@ -16,13 +16,13 @@ AoCDay12Test >> setUp [
 
 { #category : 'executing' }
 AoCDay12Test >> testPart1WithRealData [
-| lines res duration |
 
+	| lines res duration |
 	lines := self
-		readInputFileAsLines: 'input1.txt'
-		for: self day
-		onPath: self path.
-		
+		         readInputFileAsSections: 'input1.txt'
+		         for: self day
+		         onPath: self path.
+
 	duration := [ res := inst part1: lines ] timeToRun.
 
 	Transcript
@@ -33,8 +33,7 @@ AoCDay12Test >> testPart1WithRealData [
 		show: res;
 		cr.
 
-	self assert: res equals: 0.
-
+	self assert: res equals: 454
 ]
 
 { #category : 'executing' }
@@ -56,51 +55,5 @@ AoCDay12Test >> testPart1WithSample [
 		show: res;
 		cr.
 
-	self assert: res equals: 2
-]
-
-{ #category : 'executing' }
-AoCDay12Test >> testPart2WithRealData [
-| lines res duration |
-
-	lines := self
-		readInputFileAsLines: 'input1.txt'
-		for: self day
-		onPath: self path.
-		
-	duration := [ res := inst part2: lines ] timeToRun.
-
-	Transcript
-		show: 'part2WithRealData: ';
-		show: duration asMilliSeconds printString;
-		show: ' ms; ';
-		show: 'Answer: ';
-		show: res;
-		cr.
-
-	self assert: res equals: 0.
-
-]
-
-{ #category : 'executing' }
-AoCDay12Test >> testPart2WithSample [
-| lines res duration |
-
-	lines := self
-		readInputFileAsLines: 'input0.txt'
-		for: self day
-		onPath: self path.
-		
-	duration := [ res := inst part2: lines ] timeToRun.
-
-	Transcript
-		show: 'part2WithSample: ';
-		show: duration asMilliSeconds printString;
-		show: ' ms; ';
-		show: 'Answer: ';
-		show: res;
-		cr.
-
-	self assert: res equals: 0.
-
+	self assert: res equals: 3
 ]

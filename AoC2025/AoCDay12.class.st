@@ -35,7 +35,7 @@ AoCDay12 >> part1: sections [
 			           ((chunks second trimBoth splitOn: ' ') collect: [ :each |
 				            each asString asInteger ]) withIndexDo: [ :curr :index |
 				           heurArea := heurArea + ((shapes at: index - 1) * curr) ].
-			           self halt.
+
 			           heurArea <= maxArea ].
 
 	^ regions size
