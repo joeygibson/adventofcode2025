@@ -79,7 +79,7 @@ AoCDay11Test >> testPart2WithRealData [
 		show: res;
 		cr.
 
-	self assert: res equals: 0
+	self assert: res equals: 332052564714990
 ]
 
 { #category : 'executing' }
