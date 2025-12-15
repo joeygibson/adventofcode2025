@@ -4,6 +4,12 @@ Day10 of Advent of Code 2025.
 Class {
 	#name : 'AoCDay10',
 	#superclass : 'AoCBase',
+	#instVars : [
+		'buttons',
+		'jolts',
+		'ops',
+		'patterns'
+	],
 	#category : 'AoC2025',
 	#package : 'AoC2025'
 }
@@ -46,4 +52,10 @@ AoCDay10 >> part1: lines [
 						ifFalse: [ presses := presses + 1 ] ] ].
 
 	^ totalPresses
+]
+
+{ #category : 'running' }
+AoCDay10 >> part2: lines [
+
+	^ FactoryMachineSolver solve: lines
 ]

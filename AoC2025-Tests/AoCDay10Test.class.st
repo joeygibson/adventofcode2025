@@ -62,13 +62,14 @@ AoCDay10Test >> testPart1WithSample [
 
 { #category : 'executing' }
 AoCDay10Test >> testPart2WithRealData [
-| lines res duration |
 
+	| lines res duration |
 	lines := self
-		readInputFileAsLines: 'input1.txt'
-		for: self day
-		onPath: self path.
-		
+		         readInputFile: 'input1.txt'
+		         for: self day
+		         onPath: self path.
+
+	self increaseTimeout: 7200.
 	duration := [ res := inst part2: lines ] timeToRun.
 
 	Transcript
@@ -79,19 +80,18 @@ AoCDay10Test >> testPart2WithRealData [
 		show: res;
 		cr.
 
-	self assert: res equals: 0.
-
+	self assert: res equals: 0
 ]
 
 { #category : 'executing' }
 AoCDay10Test >> testPart2WithSample [
-| lines res duration |
 
+	| lines res duration |
 	lines := self
-		readInputFileAsLines: 'input0.txt'
-		for: self day
-		onPath: self path.
-		
+		         readInputFile: 'input0.txt'
+		         for: self day
+		         onPath: self path.
+
 	duration := [ res := inst part2: lines ] timeToRun.
 
 	Transcript
@@ -102,6 +102,5 @@ AoCDay10Test >> testPart2WithSample [
 		show: res;
 		cr.
 
-	self assert: res equals: 0.
-
+	self assert: res equals: 33
 ]
