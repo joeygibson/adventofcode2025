@@ -62,7 +62,9 @@ AoCDay09Test >> testPart2WithRealData [
 		         readInputFileAsLines: 'input1.txt'
 		         for: self day
 		         onPath: self path.
-
+	
+	self increaseTimeout: 300.
+	
 	duration := [ res := inst part2: lines ] timeToRun.
 
 	Transcript

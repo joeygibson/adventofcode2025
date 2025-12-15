@@ -8,22 +8,6 @@ Class {
 	#package : 'AoC2025'
 }
 
-{ #category : 'as yet unclassified' }
-AoCDay09 >> onSegment: p middle: q end: r [
-    ^ (q x between: p x and: r x)
-       and: [q y between: p y and: r y]
-
-]
-
-{ #category : 'as yet unclassified' }
-AoCDay09 >> orientationOf: p with: q and: r [
-    | val |
-    val := (q y - p y) * (r x - q x)
-           - (q x - p x) * (r y - q y).
-    ^ val sign  "=> -1 counterclockwise, 0 collinear, 1 clockwise"
-
-]
-
 { #category : 'running' }
 AoCDay09 >> part1: lines [
 
@@ -46,108 +30,87 @@ AoCDay09 >> part1: lines [
 { #category : 'running' }
 AoCDay09 >> part2: lines [
 
-	| rectangles points areas bounds containedRectangles vertices edges |
-	points := lines collect: [ :line |
-			          | chunks |
-			          chunks := (line splitOn: ',') collect: [ :c |
-				                    c asString asInteger ].
-			          chunks first @ chunks second ].
+	| redTiles greenTiles allGreenTiles maxArea minX maxX minY maxY |
+	redTiles := lines collect: [ :line |
+			            | chunks |
+			            chunks := (line splitOn: ',') collect: [ :c |
+				                      c asString asInteger ].
+			            chunks first @ chunks second ].
 
-	vertices := points copy asOrderedCollection.
-	vertices add: points first.
 
-	bounds := PathShape vertices: vertices.
-	edges := OrderedCollection new.
-	bounds segmentsDo: [ :a :b |
-			edges add: {
-					a.
-					b } ].
+	"Build green tiles connecting consecutive red tiles"
+	greenTiles := Set new.
+	redTiles withIndexDo: [ :tile :index |
+			| nextTile |
+			nextTile := redTiles at: index \\ redTiles size + 1.
 
-	rectangles := points uniquePairs collect: [ :pair |
-		              Rectangle point: pair first point: pair second ].
+			"Add green tiles in straight line between current and next"
+			tile x = nextTile x
+				ifTrue: [ "Same column - vertical line"
+						(tile y min: nextTile y) + 1 to: (tile y max: nextTile y) - 1
+						do: [ :y | greenTiles add: tile x @ y ] ]
+				ifFalse: [ "Same row - horizontal line"
+						(tile x min: nextTile x) + 1 to: (tile x max: nextTile x) - 1
+						do: [ :x | greenTiles add: x @ tile y ] ] ].
 
-	containedRectangles := rectangles select: [ :r |
-			                       self
-				                       rectIntersectsPolygon: r
-				                       polygonEdges: edges
-				                       polygonContains: [ :p |
-				                       self polygon: vertices containsPoint: p ] ].
-	areas := (containedRectangles collect: [ :r | r inclusiveArea ])
-		         sorted: [ :a :b | a >= b ].
+	"Find tiles inside the loop using point-in-polygon (ray casting)"
+	allGreenTiles := greenTiles copy.
 
-	self halt.
-	^ areas first
-]
+	minX := (redTiles collect: #x) min.
+	maxX := (redTiles collect: #x) max.
+	minY := (redTiles collect: #y) min.
+	maxY := (redTiles collect: #y) max.
 
-{ #category : 'as yet unclassified' }
-AoCDay09 >> polygon: vertices containsPoint: p [
-    "vertices is an OrderedCollection of Points describing a simple polygon.
-     Return true if p is inside or on the boundary (ray‑casting / pnpoly style)."
-    | inside j n vi vj |
-    inside := false.
-    n := vertices size.
-    j := n.
-    1 to: n do: [:i |
-        vi := vertices at: i.
-        vj := vertices at: j.
-        (((vi y > p y) ~= (vj y > p y))
-            and: [p x < (vj x - vi x) * (p y - vi y) / (vj y - vi y) + vi x])
-            ifTrue: [inside := inside not].
-        j := i ].
-    ^ inside
+	minY to: maxY do: [ :y |
+			minX to: maxX do: [ :x |
+					| point isInside crossings |
+					point := x @ y.
 
-]
+					"Skip if already red or green"
+					((redTiles includes: point) or: [ greenTiles includes: point ])
+						ifFalse: [ "Ray casting algorithm - count crossings to the right"
+								crossings := 0.
+								redTiles doWithIndex: [ :tile :index |
+										| nextTile |
+										nextTile := redTiles at: index \\ redTiles size + 1.
 
-{ #category : 'as yet unclassified' }
-AoCDay09 >> rectIntersectsPolygon: r polygonEdges: edges polygonContains: polygonContainsBlock [
-    | rectCorners rectEdges |
+										"Check if edge crosses ray from point going right"
+										((tile y <= y and: [ nextTile y > y ]) or: [
+											 tile y > y and: [ nextTile y <= y ] ]) ifTrue: [
+												| xIntersect |
+												xIntersect := tile x
+												              +
+												              (y - tile y * (nextTile x - tile x)
+												               // (nextTile y - tile y)).
+												xIntersect > x ifTrue: [ crossings := crossings + 1 ] ] ].
 
-    rectCorners := { r origin.
-                     r corner.
-                     r left @ r bottom.
-                     r right @ r top }.
+								"Odd number of crossings means inside"
+								crossings odd ifTrue: [ allGreenTiles add: point ] ] ] ].
 
-    "1) Any polygon vertex inside rect?"
-    (edges anySatisfy: [:e | r containsPoint: e first]) ifTrue: [ ^ true ].
+	"Find largest rectangle with red corners containing only red or green tiles"
+	maxArea := 0.
+	redTiles doWithIndex: [ :tile1 :i |
+			i + 1 to: redTiles size do: [ :j |
+					| tile2 width height area valid |
+					tile2 := redTiles at: j.
 
-    "2) Any rect corner inside polygon?"
-    (rectCorners anySatisfy: [:c | polygonContainsBlock value: c]) ifTrue: [ ^ true ].
+					"Calculate rectangle dimensions"
+					width := (tile1 x - tile2 x) abs + 1.
+					height := (tile1 y - tile2 y) abs + 1.
+					area := width * height.
 
-    "3) Any edge intersection?"
-    rectEdges := {
-        { rectCorners first. rectCorners third }.  "left"
-        { rectCorners first. rectCorners fourth }. "top"
-        { rectCorners second. rectCorners third }. "bottom"
-        { rectCorners second. rectCorners fourth } "right"
-    }.
+					"Check if all tiles in rectangle are red or green"
+					valid := true.
+					(tile1 x min: tile2 x) to: (tile1 x max: tile2 x) do: [ :x |
+							valid ifTrue: [
+									(tile1 y min: tile2 y) to: (tile1 y max: tile2 y) do: [ :y |
+											| point |
+											point := x @ y.
+											((redTiles includes: point) or: [
+												 allGreenTiles includes: point ]) ifFalse: [
+												valid := false ] ] ] ].
 
-    rectEdges do: [:re |
-        edges do: [:pe |
-            (self segmentsIntersectP1: re first p2: re second
-                               p3: pe first p4: pe second)
-                ifTrue: [ ^ true ] ] ].
+					valid ifTrue: [ maxArea := maxArea max: area ] ] ].
 
-    ^ false
-
-]
-
-{ #category : 'as yet unclassified' }
-AoCDay09 >> segmentsIntersectP1: p1 p2: p2 p3: p3 p4: p4 [
-    | o1 o2 o3 o4 |
-    o1 := self orientationOf: p1 with: p2 and: p3.
-    o2 := self orientationOf: p1 with: p2 and: p4.
-    o3 := self orientationOf: p3 with: p4 and: p1.
-    o4 := self orientationOf: p3 with: p4 and: p2.
-
-    "General case"
-    (o1 ~= o2 and: [o3 ~= o4]) ifTrue: [^ true].
-
-    "Collinear overlap cases"
-    (o1 = 0 and: [self onSegment: p1 middle: p3 end: p2]) ifTrue: [^ true].
-    (o2 = 0 and: [self onSegment: p1 middle: p4 end: p2]) ifTrue: [^ true].
-    (o3 = 0 and: [self onSegment: p3 middle: p1 end: p4]) ifTrue: [^ true].
-    (o4 = 0 and: [self onSegment: p3 middle: p2 end: p4]) ifTrue: [^ true].
-
-    ^ false
-
+	^ maxArea
 ]
