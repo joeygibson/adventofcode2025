@@ -33,15 +33,41 @@ fn repeats_twice(id: Int) -> Bool {
 fn repeats_at_least_twice(id: Int) -> Bool {
   let str = int.to_string(id)
   let size = string.length(str)
-  let half = size / 2
 
-  list.range(0, half)
-  |> list.any(fn(i) {
-    let sub = string.slice(str, 0, i)
-    let chunks = string.split(str, sub)
-
-    list.all(chunks, fn(chunk) { string.length(chunk) == 0 })
+  // Only check pattern lengths that divide evenly into total length
+  list.range(1, size / 2)
+  |> list.any(fn(pattern_len) {
+    case size % pattern_len {
+      0 -> {
+        // Get the pattern
+        let pattern = string.slice(str, 0, pattern_len)
+        // Check if the entire string is just this pattern repeated
+        check_pattern_repeats(str, pattern, pattern_len, size)
+      }
+      _ -> False
+    }
   })
+}
+
+fn check_pattern_repeats(
+  str: String,
+  pattern: String,
+  pattern_len: Int,
+  total_len: Int,
+) -> Bool {
+  let num_repeats = total_len / pattern_len
+
+  // Must repeat at least twice
+  case num_repeats >= 2 {
+    True -> {
+      list.range(1, num_repeats - 1)
+      |> list.all(fn(i) {
+        let offset = i * pattern_len
+        string.slice(str, offset, pattern_len) == pattern
+      })
+    }
+    False -> False
+  }
 }
 
 fn validate_ids(start: Int, end: Int, validator: fn(Int) -> Bool) -> List(Int) {
@@ -51,6 +77,7 @@ fn validate_ids(start: Int, end: Int, validator: fn(Int) -> Bool) -> List(Int) {
 
 pub fn part1(lines: List(String)) -> Int {
   let ranges = parse(list.first(lines) |> result.unwrap(""))
+
   let invalid_ranges =
     list.flat_map(ranges, fn(range: #(Int, Int)) {
       validate_ids(range.0, range.1, repeats_twice)
@@ -61,6 +88,7 @@ pub fn part1(lines: List(String)) -> Int {
 
 pub fn part2(lines: List(String)) -> Int {
   let ranges = parse(list.first(lines) |> result.unwrap(""))
+
   let invalid_ranges =
     list.flat_map(ranges, fn(range: #(Int, Int)) {
       validate_ids(range.0, range.1, repeats_at_least_twice)
