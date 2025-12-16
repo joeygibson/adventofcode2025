@@ -34,3 +34,19 @@ pub fn part1_with_real_data_test() {
 
   assert res == Ok(1031)
 }
+
+pub fn part2_with_sample_test() {
+  let lines = get_data("../input0.txt")
+
+  let res = day01.part2(lines)
+
+  assert res == 6
+}
+
+pub fn part2_with_real_data_test() {
+  let lines = get_data("../input1.txt")
+
+  let res = day01.part2(lines)
+
+  assert res == 5831
+}
