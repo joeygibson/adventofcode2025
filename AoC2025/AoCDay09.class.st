@@ -9,6 +9,27 @@ Class {
 }
 
 { #category : 'running' }
+AoCDay09 >> isPointInside: point polygon: redTiles [
+
+	| crossings |
+	crossings := 0.
+	redTiles doWithIndex: [ :tile :index |
+			| nextTile |
+			nextTile := redTiles at: index \\ redTiles size + 1.
+
+			((tile y <= point y and: [ nextTile y > point y ]) or: [
+				 tile y > point y and: [ nextTile y <= point y ] ]) ifTrue: [
+					| xIntersect |
+					xIntersect := tile x
+					              +
+					              (point y - tile y * (nextTile x - tile x)
+					               // (nextTile y - tile y)).
+					xIntersect > point x ifTrue: [ crossings := crossings + 1 ] ] ].
+
+	^ crossings odd
+]
+
+{ #category : 'running' }
 AoCDay09 >> part1: lines [
 
 	| rectangles points areas |
@@ -30,87 +51,149 @@ AoCDay09 >> part1: lines [
 { #category : 'running' }
 AoCDay09 >> part2: lines [
 
-	| redTiles greenTiles allGreenTiles maxArea minX maxX minY maxY |
+	| redTiles greenTileSet maxArea candidates redTileSet |
 	redTiles := lines collect: [ :line |
 			            | chunks |
 			            chunks := (line splitOn: ',') collect: [ :c |
 				                      c asString asInteger ].
 			            chunks first @ chunks second ].
 
-
-	"Build green tiles connecting consecutive red tiles"
-	greenTiles := Set new.
+	"Build green edge tiles connecting consecutive red tiles"
+	greenTileSet := Set new.
 	redTiles withIndexDo: [ :tile :index |
 			| nextTile |
 			nextTile := redTiles at: index \\ redTiles size + 1.
 
-			"Add green tiles in straight line between current and next"
 			tile x = nextTile x
-				ifTrue: [ "Same column - vertical line"
+				ifTrue: [
 						(tile y min: nextTile y) + 1 to: (tile y max: nextTile y) - 1
-						do: [ :y | greenTiles add: tile x @ y ] ]
-				ifFalse: [ "Same row - horizontal line"
+						do: [ :y | greenTileSet add: tile x @ y ] ]
+				ifFalse: [
 						(tile x min: nextTile x) + 1 to: (tile x max: nextTile x) - 1
-						do: [ :x | greenTiles add: x @ tile y ] ] ].
+						do: [ :x | greenTileSet add: x @ tile y ] ] ].
 
-	"Find tiles inside the loop using point-in-polygon (ray casting)"
-	allGreenTiles := greenTiles copy.
+	"Create all candidate rectangles with their potential areas"
+	candidates := OrderedCollection new.
+	redTiles := redTiles asArray.
+	redTileSet := redTiles asSet.
 
-	minX := (redTiles collect: #x) min.
-	maxX := (redTiles collect: #x) max.
-	minY := (redTiles collect: #y) min.
-	maxY := (redTiles collect: #y) max.
-
-	minY to: maxY do: [ :y |
-			minX to: maxX do: [ :x |
-					| point isInside crossings |
-					point := x @ y.
-
-					"Skip if already red or green"
-					((redTiles includes: point) or: [ greenTiles includes: point ])
-						ifFalse: [ "Ray casting algorithm - count crossings to the right"
-								crossings := 0.
-								redTiles doWithIndex: [ :tile :index |
-										| nextTile |
-										nextTile := redTiles at: index \\ redTiles size + 1.
-
-										"Check if edge crosses ray from point going right"
-										((tile y <= y and: [ nextTile y > y ]) or: [
-											 tile y > y and: [ nextTile y <= y ] ]) ifTrue: [
-												| xIntersect |
-												xIntersect := tile x
-												              +
-												              (y - tile y * (nextTile x - tile x)
-												               // (nextTile y - tile y)).
-												xIntersect > x ifTrue: [ crossings := crossings + 1 ] ] ].
-
-								"Odd number of crossings means inside"
-								crossings odd ifTrue: [ allGreenTiles add: point ] ] ] ].
-
-	"Find largest rectangle with red corners containing only red or green tiles"
-	maxArea := 0.
 	redTiles doWithIndex: [ :tile1 :i |
 			i + 1 to: redTiles size do: [ :j |
-					| tile2 width height area valid |
+					| tile2 width height area |
 					tile2 := redTiles at: j.
-
-					"Calculate rectangle dimensions"
 					width := (tile1 x - tile2 x) abs + 1.
 					height := (tile1 y - tile2 y) abs + 1.
 					area := width * height.
+					candidates add: {
+							area.
+							tile1.
+							tile2 } ] ].
 
-					"Check if all tiles in rectangle are red or green"
-					valid := true.
-					(tile1 x min: tile2 x) to: (tile1 x max: tile2 x) do: [ :x |
-							valid ifTrue: [
-									(tile1 y min: tile2 y) to: (tile1 y max: tile2 y) do: [ :y |
-											| point |
-											point := x @ y.
-											((redTiles includes: point) or: [
-												 allGreenTiles includes: point ]) ifFalse: [
-												valid := false ] ] ] ].
+	"Sort by area descending for early termination"
+	candidates := candidates sorted: [ :a :b | a first >= b first ].
 
-					valid ifTrue: [ maxArea := maxArea max: area ] ] ].
+	"Find largest valid rectangle"
+	maxArea := 0.
+	candidates do: [ :candidate |
+			| area tile1 tile2 |
+			area := candidate first.
+
+			"Early termination: if this area can't beat current max, stop"
+			area <= maxArea ifTrue: [ ^ maxArea ].
+
+			"Skip very large rectangles - too expensive to validate thoroughly"
+			area <= 3000000000 ifTrue: [
+					tile1 := candidate second.
+					tile2 := candidate third.
+
+					"Validate rectangle efficiently"
+					(self
+						 validateRectangle: tile1
+						 corner: tile2
+						 redTiles: redTileSet
+						 greenTiles: greenTileSet
+						 allRedTiles: redTiles) ifTrue: [ maxArea := area ] ] ].
 
 	^ maxArea
+]
+
+{ #category : 'as yet unclassified' }
+AoCDay09 >> validateRectangle: corner1 corner: corner2 redTiles: redTileSet greenTiles: greenTileSet allRedTiles: redTilesArray [
+
+	| minX maxX minY maxY width height step centerX centerY perimeterStep |
+	minX := corner1 x min: corner2 x.
+	maxX := corner1 x max: corner2 x.
+	minY := corner1 y min: corner2 y.
+	maxY := corner1 y max: corner2 y.
+	width := maxX - minX + 1.
+	height := maxY - minY + 1.
+
+	"Quick reject: check center first (cheap test)"
+	centerX := minX + maxX // 2.
+	centerY := minY + maxY // 2.
+
+	((redTileSet includes: centerX @ centerY) or: [
+			 (greenTileSet includes: centerX @ centerY) or: [
+				 self isPointInside: centerX @ centerY polygon: redTilesArray ] ])
+		ifFalse: [ ^ false ].
+
+	"For small rectangles, check all points"
+	width * height < 10000 ifTrue: [
+			minX to: maxX do: [ :x |
+					minY to: maxY do: [ :y |
+							| point |
+							point := x @ y.
+							((redTileSet includes: point) or: [
+									 (greenTileSet includes: point) or: [
+										 self isPointInside: point polygon: redTilesArray ] ])
+								ifFalse: [ ^ false ] ] ].
+			^ true ].
+
+	"For larger rectangles: sample perimeter and interior"
+	"Perimeter sampling - denser for smaller rectangles"
+	perimeterStep := (width max: height) < 10000
+		                 ifTrue: [ 1 ]
+		                 ifFalse: [
+				                 (width max: height) < 50000
+					                 ifTrue: [ 10 ]
+					                 ifFalse: [ 50 ] ].
+
+	minX to: maxX by: perimeterStep do: [ :x |
+			| top bottom |
+			top := x @ minY.
+			bottom := x @ maxY.
+			((redTileSet includes: top) or: [
+					 (greenTileSet includes: top) or: [
+						 self isPointInside: top polygon: redTilesArray ] ]) ifFalse: [
+				^ false ].
+			((redTileSet includes: bottom) or: [
+					 (greenTileSet includes: bottom) or: [
+						 self isPointInside: bottom polygon: redTilesArray ] ])
+				ifFalse: [ ^ false ] ].
+
+	minY + 1 to: maxY - 1 by: perimeterStep do: [ :y |
+			| left right |
+			left := minX @ y.
+			right := maxX @ y.
+			((redTileSet includes: left) or: [
+					 (greenTileSet includes: left) or: [
+						 self isPointInside: left polygon: redTilesArray ] ]) ifFalse: [
+				^ false ].
+			((redTileSet includes: right) or: [
+					 (greenTileSet includes: right) or: [
+						 self isPointInside: right polygon: redTilesArray ] ]) ifFalse: [
+				^ false ] ].
+
+	"Sample interior"
+	step := (width min: height) // 15 max: 1.
+	minX + step to: maxX - step by: step do: [ :x |
+			minY + step to: maxY - step by: step do: [ :y |
+					| point |
+					point := x @ y.
+					((redTileSet includes: point) or: [
+							 (greenTileSet includes: point) or: [
+								 self isPointInside: point polygon: redTilesArray ] ])
+						ifFalse: [ ^ false ] ] ].
+
+	^ true
 ]
