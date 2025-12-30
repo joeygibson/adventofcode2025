@@ -1,0 +1,31 @@
+#!/usr/bin/env bash
+
+if [[ "$1" == "" ]]; then
+  echo "Usage: create <project-name>"
+  exit 1
+fi
+
+MAIN_DIR=$(pwd)
+PROJECT_NAME="$1"
+TEMPLATE_DIR=templates
+
+# if [[ -d "${PROJECT_NAME}" ]]; then
+  # echo "${PROJECT_NAME} exists; pick another"
+  # exit 1
+# fi
+
+if [[ -d "${PROJECT_NAME}" ]]; then
+  cd "${PROJECT_NAME}"
+  cargo init --lib
+else
+  cargo new "${PROJECT_NAME}" --lib
+fi
+
+cd ${MAIN_DIR}
+
+cp ${TEMPLATE_DIR}/aoc.rs "${PROJECT_NAME}"/src/aoc.rs
+cp ${TEMPLATE_DIR}/lib.rs "${PROJECT_NAME}"/src/lib.rs
+
+echo "Done."
+tree "${PROJECT_NAME}"
+
